@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+    <!-- 注解注入在XML注入之前进行，因此对于通过这两种方法进行组装的属性后者的配置会覆盖前者-->
+    <!-- 跟以前一样，你可以作为单独的bean定义注册他们，但也可以通过在一个基于XML的Spring配置（注入包含上下文命名空间）中
+    包含下面的标签来隐式的注册它们-->
+    <context:annotation-config/>
+    <!-- 隐式注册的后处理器包括AutowiredAnnotationPostProcessor,CommonAnnotationPostProcessor,PersistenceAnnotationPost
+    -Processor和前面提到的RequiredAnnotationPostProcessor-->
+    <!-- <context:annotation-config/>仅在定义它的同样的应用上下文中寻找注解的beans。这意味着，如果你在一个为
+    DispatcherServlet服务的WebApplicationContext中放置了<context:annotation-config/>，它只能在你的控制器中寻找@Autowired
+    注解的beans，而不是在你的服务层中。-->
+
+    <!-- @Required注解应用到bean属性的setter方法上，这个注解仅仅表明受影响的bean属性必须在配置时通过显示的bean定义或自动
+    组装填充。如果受影响的bean属性没有填充，容器会抛出一个异常，这允许及早明确失败，避免NullPointerException或后面出现类似的
+    情况。仍然建议你在bean类本身加入断言，例如，加入到初始化方法中。这样做可以强制这些需要的引用和值，即使是在容器外使用这个
+    类。(SimpleMovieLister)-->
+
+    <!-- 在下面的例子中JSR 330的@Inject注解可以用来代替Spring的@Autowired注解-->
+    <!-- @Autowired 你可以将@Autowired注解应用到构造函数上。从Spring框架4.3起，如果目标bean仅定义了一个构造函数，那么
+    @Autowired注解的构造函数不再是必要的。如果一些构造函数是可获得的，至少有一个必须要加上注解，以便于告诉容器用哪个
+    (MovieRecommender)-->
+    <!-- 正如预料的那样，你也可以将@Autowired注解应用到传统的setter方法上（SimpleMovieLister）-->
+    <!-- 你也可以应用注解到具有任何名字或多个参数的方法上(MovieRecommender)-->
+    <!-- 你也可应用@Autowired到字段上，甚至可以与构造函数混用(MovieRecommender)-->
+    <!-- 通过给带有数组的字段或方法添加@Autowired注解，也可以从ApplicationContext中提供一组特定类型的bean（MovieRecommender）-->
+    <!-- 同样也可以应用到具有同一类型的集合上（MovieRecommender）-->
+    <!-- 如果你希望数组或列表中的项按指定顺序排序，你的bean可以实现org.springframework.core.Ordered接口，或使用@Order或标准
+    @Priority注解-->
+    <!-- 只要期望的key是String类型，那么类型化的Maps就可以自动组装，Map的值将包含所有期望类型的beans，key将包含对应的bean名
+    字(MovieRecommender)-->
+    <!-- 默认情况下，当没有候选beans可获得时，自动组装会失败；默认的行为是将注解的方法，构造函数额字段看作指明了需要的依赖。
+    这个行为也可以通过下面的方式去改变（SimpleMovieLister）-->
+    <!-- 每个类只有一个构造函数可以标记为必需的，但可以注解多个非必需的构造函数。在这种情况下，会考虑这些候选者的每一个，
+    Spring使用最贪婪的构造函数，即依赖最满足的构造函数，具有最大数目的参数-->
+    <!-- 建议在@Required注解之上使用@Autowired的required特性。required特性表明这个属性自动装配是不需要的，如果这个属性不能
+    被自动装配，它会被忽略。另一方面，@Required注解是更强大的，在它强制这个属性被任何容器支持的bean设置。如果没有值注入，会
+    抛出对应的异常。-->
+    <!-- 你也可以对那些已知的具有可解析依赖的接口使用@Autowired：BeanFactory,ApplicationContext,Environment,ResourceLoader
+    ApplicationEventPublisher,MessageSource。这些接口和他们的扩展接口，例如ConfigurableApplicationContext或ResourcePattern
+    -Resolver,可以自动解析，不需要特别的设置（MovieRecommender）-->
+    <!-- @Autowired,@Inject,@Resource,@Value注解是通过SpringBeanPostProcessor实现处理，这反过来意味着你不能在自己的Bean
+    -PostProcessor或BeanFactoryPostProcessor中应用这些注解（如果有的话）。这些类型必须显示的通过XML或使用Spring的@Bean方法
+    来'wired up'-->
+</beans>
