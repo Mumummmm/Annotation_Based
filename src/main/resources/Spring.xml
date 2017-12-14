@@ -45,4 +45,77 @@
     <!-- @Autowired,@Inject,@Resource,@Value注解是通过SpringBeanPostProcessor实现处理，这反过来意味着你不能在自己的Bean
     -PostProcessor或BeanFactoryPostProcessor中应用这些注解（如果有的话）。这些类型必须显示的通过XML或使用Spring的@Bean方法
     来'wired up'-->
+
+    <!-- 3.9.3 用@Primary微调基于注解的自动装配-->
+    <!-- 因为根据类型的自动装配可能会导致多个候选目标，所以在选择过程中进行更多的控制经常是有必要的。一种方式通过Spring的
+    @Primary注解来完成。当有个多个候选bean要组装到一个单值的依赖时，@Primary表示指定bean应该具有更高的优先级。假设我们具有
+    如下配置，将firstMovieCatalog定义为主要的MovieCatalog。（MovieConfiguration）-->
+    <!-- 对应的bean定义如下：-->
+    <bean class="com.pansy.MovieCatalog" primary="true"/>
+    <bean class="com.pansy.MovieCatalog"/>
+    <bean class="com.pansy.CustomerPerferenceDao"></bean>
+    <bean id="movieRecommender" class="com.pansy.MovieRecommender"/>
+    <!-- 3.9.4 微调基于注解且带有限定符的自动装配-->
+    <!-- 当有多个实例需要确定一个主要的候选对象时，@Primary是一种按类型自动装配的有效方式。当需要在选择的过程中进行更多的控制
+    时，可以使用Spring的@Qualifier注解。（MovieRecommender）-->
+    <!-- @Qualifier注解也可以指定单个构造函数参数或方法参数-->
+    <!-- 对应的bean定义如下。限定符值为"main"的bean被组装到有相同值的构造函数参数中-->
+    <bean id="main" class="com.pansy.MovieCatalog">
+        <!--<qualifier value="main"></qualifier>-->
+    </bean>
+    <bean class="com.pansy.MovieCatalog">
+        <qualifier value="action"></qualifier>
+    </bean>
+    <!-- 对于回退匹配，bean名字被认为是默认的限定符值。因此你可以定义一个id为main的bean来代替内嵌的限定符元素，会有同样的匹
+    配结果。然而，尽管你可以使用这个约定根据名字引用特定的beans，但是@Autowired从根本上来讲是使用可选的语义限定符来进行类型
+    驱动注入的。这意味着限定符的值，即使回退到bean名称，总是缩小语义类型匹配的集合；它们没有从语义上将一个引用表达为一个唯一
+    的bean id。-->
+    <!-- 正如前面讨论的那样，限定符也可以应用到类型结合上，例如，Set<MovieCatalog>。在这个例子中，根据声明的限定符匹配的所有
+    beans作为一个集合注入。这意味着限定符不必唯一；它们只是构成过滤标准。例如，你可以定义多个具有同样限定符值"action"的
+    MovieCatalog，所有这些都将注入到带有注解@Qualifier("action")的Set<MovieCatalog>中。-->
+    <!-- 如果想通过名字表达注解驱动的注入，不要主要使用@Autowired，虽然在技术上能通过@Qualifier值引用一个bean名字。作为可替
+    代品，可以使用JSR250@Resource注解，它在语义上被定义为通过组件唯一的名字来识别特定的目标组件，声明的类型与匹配过程无关。
+    @Autowired有不同的语义：通过类型选择候选beans，特定的String限定符值被认为只在类型选择的候选目标中，例如，在那些标记为具
+    有相同限定符标签的beans中匹配一个"account"的限定符-->
+    <!-- @Autowired可以应用到字段，构造函数和多参数方法上，允许通过限定符注解在参数层面上缩减候选目标。相比之下，@Resource
+    仅支持字段和bean属性的带有单个参数的setter方法。因此，如果你的注入目标是一个构造参数或一个多参数的方法，坚持使用限定符-->
+    <!-- 你可以创建自己的定制限定符注解，简单定义一个注解，在你自己的定义中提供@Qualifier注解（Genre）-->
+    <!-- 接下来，提供候选bean定义的信息。你可以添加<qualifier/>标记作为<bean/>标记的子元素，然后指定匹配你的定制限定符注解
+    的类型和值。类型用来匹配注解的全限定类名称。或者，没有名称冲突的风险，为了方便，你可以使用简写的类名称。-->
+    <bean class="com.pansy.MovieCatalog">
+        <qualifier type="com.pansy.Genre" value="Action"/>
+    </bean>
+    <bean class="com.pansy.MovieCatalog">
+        <qualifier type="com.pansy.Genre" value="Comedy"/>
+    </bean>
+    <!-- 3.10小节类路径扫描和管理组件中，你将看到一个基于注解的替代方法，在XML中提供限定符元数据。特别的，看3.10.8小节，"用
+    注解提供限定符元数据"-->
+    <!-- 在某些情况下，使用没有值的注解就是足够的。当注解为了通用的目的时，这是非常有用的，可以应用到跨几个不同类型的依赖上。
+    例如，当网络不可用时，你可以提供一个要搜索的离线目录。首先定义一个简单的注解：(Offline)-->
+    <bean class="com.pansy.MovieCatalog">
+        <qualifier type="com.pansy.Offline"></qualifier>
+    </bean>
+    <!-- 你也可以定义接收命名属性之外的定制限定符注解或代替简单的值属性。如果要注入的字段或参数指定了多个属性值，bean定义必须
+    匹配所有的属性值才会被认为是一个可自动装配的候选目标。作为一个例子，考虑下面的注解定义：（MovieQualifier）此例子有问题，
+    没找出原因-->
+    <bean class="com.pansy.MovieCatalog">
+        <qualifier type="com.pansy.MovieQualifier">
+            <attribute key="format" value="VHS"/>
+            <attribute key="genre" value="Action"/>
+        </qualifier>
+    </bean>
+    <bean class="com.pansy.MovieCatalog">
+        <qualifier type="com.pansy.MovieQualifier">
+            <attribute key="format" value="VHS"/>
+            <attribute key="genre" value="Comedy"/>
+        </qualifier>
+    </bean>
+    <bean class="com.pansy.MovieCatalog">
+        <meta key="format" value="DVD"/>
+        <meta key="genre" value="Action"/>
+    </bean>
+    <bean class="com.pansy.MovieCatalog">
+        <meta key="format" value="BLURAY"/>
+        <meta key="genre" value="Comedy"/>
+    </bean>
 </beans>

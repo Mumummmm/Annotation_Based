@@ -1,16 +1,22 @@
 package com.pansy;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 
-import javax.inject.Inject;
 import java.util.Map;
 import java.util.Set;
 
 public class MovieRecommender {
+    @Autowired
     private CustomerPerferenceDao customerPerferenceDao;
     @Autowired
 //    @Inject
+    @Genre(value = "Action")
+    private MovieCatalog actionCatalog;
+    private MovieCatalog comedyCatalog;
+    @Autowired
+    @Qualifier("main")
     private MovieCatalog movieCatalog;
     @Autowired
     private MovieCatalog[] movieCatalogs;
@@ -18,6 +24,25 @@ public class MovieRecommender {
     private Map<String, MovieCatalog> movieCatalogMap;
     @Autowired
     private ApplicationContext applicationContext;
+    @Autowired
+    @Offline
+    private MovieCatalog offlineCatalog;
+    @Autowired
+    @MovieQualifier(format = Format.VHS, genre = "Action")
+    private MovieCatalog actionVhsCatalog;
+    @Autowired
+    @MovieQualifier(format = Format.VHS, genre = "Comedy")
+    private MovieCatalog comedyVhsCatalog;
+    @Autowired
+    @MovieQualifier(format = Format.DVD, genre = "Action")
+    private MovieCatalog actionDvdCatalog;
+    @Autowired
+    @MovieQualifier(format = Format.BLURAY, genre = "Comedy")
+    private MovieCatalog comedyBlurayCatalog;
+
+    public void setComedyCatalog(@Genre("Comedy") MovieCatalog comedyCatalog) {
+        this.comedyCatalog = comedyCatalog;
+    }
 
     @Autowired
 //    @Inject
@@ -30,6 +55,9 @@ public class MovieRecommender {
         this.movieCatalogSet = movieCatalogSet;
     }
 
+    public MovieRecommender() {
+    }
+
     @Autowired
 //    @Inject
     public MovieRecommender(CustomerPerferenceDao customerPerferenceDao) {
@@ -37,7 +65,7 @@ public class MovieRecommender {
     }
 
     @Autowired
-    public void prepare(MovieCatalog movieCatalog, CustomerPerferenceDao customerPerferenceDao) {
+    public void prepare(@Qualifier("action") MovieCatalog movieCatalog, CustomerPerferenceDao customerPerferenceDao) {
         this.movieCatalog = movieCatalog;
         this.customerPerferenceDao = customerPerferenceDao;
     }
